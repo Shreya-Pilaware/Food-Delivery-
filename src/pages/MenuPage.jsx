@@ -30,7 +30,7 @@ const OFFER_SLIDES = [
     badge: '🔥 CRAZY 50% OFF',
     code: 'CRAVE50',
     discountText: '50% OFF on Orders over $20',
-    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80',
     accentColor: 'from-orange-600 to-rose-600'
   },
   {
@@ -40,7 +40,7 @@ const OFFER_SLIDES = [
     badge: '🎁 BOGO SPECIAL',
     code: 'BOGOFOOD',
     discountText: 'Flat $15.00 OFF on Orders over $30',
-    image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80',
     accentColor: 'from-purple-600 to-pink-600'
   },
   {
@@ -50,7 +50,7 @@ const OFFER_SLIDES = [
     badge: '⭐ 30% DISCOUNT',
     code: 'FLAVOR30',
     discountText: '30% OFF minimum spend of $25',
-    image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=1200&q=80',
     accentColor: 'from-emerald-600 to-teal-600'
   },
   {
@@ -60,7 +60,7 @@ const OFFER_SLIDES = [
     badge: '🚀 FREE DELIVERY',
     code: 'FREEDELIVERY',
     discountText: 'Free shipping on any order over $20',
-    image: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=1200&q=80',
     accentColor: 'from-amber-500 to-orange-600'
   }
 ];
