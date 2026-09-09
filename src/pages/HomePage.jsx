@@ -24,6 +24,73 @@ import {
   X
 } from 'lucide-react';
 
+const HOME_SIGNATURE_SPECIALS = [
+  {
+    id: 'home-spec-1',
+    name: 'Flame-Grilled Prime Wagyu Ribeye Steak',
+    category: 'burger',
+    price: 24.99,
+    rating: 4.9,
+    reviewCount: 312,
+    prepTime: '25 min',
+    calories: '780 kcal',
+    isVeg: false,
+    isPopular: true,
+    discountBadge: 'CHEF SPECIAL',
+    description: '10oz USDA Prime Wagyu ribeye steak seared with garlic herb butter, roasted vine tomatoes, and truffle mashed potatoes.',
+    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    tags: ['Signature', 'Prime Cut']
+  },
+  {
+    id: 'home-spec-2',
+    name: 'Crispy Maine Lobster & Garlic Butter Roll',
+    category: 'asian',
+    price: 21.50,
+    rating: 4.9,
+    reviewCount: 204,
+    prepTime: '18 min',
+    calories: '540 kcal',
+    isVeg: false,
+    isPopular: true,
+    discountBadge: 'EXCLUSIVE',
+    description: 'Chilled wild Maine lobster claw meat tossed in lemon garlic aioli, served in a toasted split-top brioche roll.',
+    image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80',
+    tags: ['Seafood', 'Top Rated']
+  },
+  {
+    id: 'home-spec-3',
+    name: 'Artisan Spanish Saffron Seafood Paella',
+    category: 'asian',
+    price: 22.99,
+    rating: 4.8,
+    reviewCount: 178,
+    prepTime: '22 min',
+    calories: '610 kcal',
+    isVeg: false,
+    isPopular: true,
+    discountBadge: 'BESTSELLER',
+    description: 'Saffron-infused Bomba rice loaded with jumbo prawns, calamari rings, blue mussels, chorizo sausage, and sweet bell peppers.',
+    image: 'https://images.unsplash.com/photo-1534080564583-6be75777b70a?auto=format&fit=crop&w=800&q=80',
+    tags: ['Spanish Classic', 'Saffron']
+  },
+  {
+    id: 'home-spec-4',
+    name: 'Iced Strawberry Vanilla Cloud Latte',
+    category: 'drinks',
+    price: 6.49,
+    rating: 4.9,
+    reviewCount: 290,
+    prepTime: '5 min',
+    calories: '210 kcal',
+    isVeg: true,
+    isPopular: true,
+    discountBadge: 'NEW FLAVOR',
+    description: 'Fresh organic strawberry puree layered with cold-brewed espresso, oat milk, and dense vanilla bean foam.',
+    image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=800&q=80',
+    tags: ['Craft Drink', 'Sweet Cloud']
+  }
+];
+
 export const HomePage = ({
   setActiveTab,
   setSelectedCategory,
@@ -46,8 +113,6 @@ export const HomePage = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const popularDishes = foodItems.filter((item) => item.isPopular).slice(0, 8);
 
   const searchedDishes = searchQuery.trim()
     ? foodItems.filter(
@@ -404,25 +469,25 @@ export const HomePage = ({
             </div>
           </section>
 
-          {/* Featured / Popular Dishes */}
+          {/* Home Signature Specials Showcase */}
           <section className="container-custom space-y-6">
             <div className="flex items-end justify-between">
               <div>
                 <span className="text-xs font-extrabold text-orange-400 uppercase tracking-widest block mb-1">
-                  Customer Favorites
+                  Home Exclusive Specials
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-black text-white">Trending Gourmet Dishes</h2>
+                <h2 className="text-2xl sm:text-3xl font-black text-white">Chef's Signature Creations</h2>
               </div>
               <button
                 onClick={() => setActiveTab('menu')}
                 className="btn-secondary text-xs"
               >
-                Explore Full Menu
+                Explore Full Menu ({foodItems.length} Dishes)
               </button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {popularDishes.map((dish) => (
+              {HOME_SIGNATURE_SPECIALS.map((dish) => (
                 <DishCard key={dish.id} dish={dish} onSelectDish={onSelectDish} />
               ))}
             </div>
