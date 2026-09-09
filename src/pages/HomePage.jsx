@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useFood } from '../context/FoodContext';
 import { useCart } from '../context/CartContext';
 import { DishCard } from '../components/DishCard';
@@ -20,7 +20,8 @@ import {
   Coffee,
   ChevronRight,
   CheckCircle2,
-  Utensils
+  Utensils,
+  X
 } from 'lucide-react';
 
 export const HomePage = ({
@@ -32,8 +33,31 @@ export const HomePage = ({
 }) => {
   const { foodItems, categories } = useFood();
   const { applyCoupon } = useCart();
+  const [showHeroDropdown, setShowHeroDropdown] = useState(false);
+  const heroSearchRef = useRef(null);
+
+  // Close hero dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (heroSearchRef.current && !heroSearchRef.current.contains(e.target)) {
+        setShowHeroDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const popularDishes = foodItems.filter((item) => item.isPopular).slice(0, 8);
+
+  const searchedDishes = searchQuery.trim()
+    ? foodItems.filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (item.tags && item.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())))
+      )
+    : [];
 
   const getCategoryIcon = (iconName) => {
     switch (iconName) {
@@ -51,6 +75,13 @@ export const HomePage = ({
   const handleCategoryClick = (catId) => {
     setSelectedCategory(catId);
     setActiveTab('menu');
+  };
+
+  const handleSelectSearchedDish = (dish) => {
+    setShowHeroDropdown(false);
+    if (onSelectDish) {
+      onSelectDish(dish);
+    }
   };
 
   return (
@@ -78,29 +109,109 @@ export const HomePage = ({
             </p>
 
             {/* Search Box */}
-            <div className="pt-2 max-w-xl mx-auto lg:mx-0">
+            <div ref={heroSearchRef} className="pt-2 max-w-xl mx-auto lg:mx-0 relative">
               <div className="bg-slate-900/90 p-2 rounded-2xl border border-slate-700/80 shadow-2xl flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-1">
                   <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setShowHeroDropdown(true)}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setShowHeroDropdown(true);
+                    }}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') setActiveTab('menu');
+                      if (e.key === 'Enter') {
+                        setShowHeroDropdown(false);
+                      }
                     }}
                     placeholder="Search dishes, cuisines, or ingredients..."
-                    className="w-full bg-transparent text-white placeholder-slate-500 pl-11 pr-4 py-3 text-sm focus:outline-none"
+                    className="w-full bg-transparent text-white placeholder-slate-500 pl-11 pr-10 py-3 text-sm focus:outline-none"
                   />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
                 <button
-                  onClick={() => setActiveTab('menu')}
+                  onClick={() => {
+                    setShowHeroDropdown(false);
+                    setActiveTab('menu');
+                  }}
                   className="btn-primary text-sm font-bold !py-3 !px-6 shrink-0"
                 >
                   <span>Explore Menu</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
+
+              {/* Hero Live Search Dropdown */}
+              {showHeroDropdown && searchQuery.trim().length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900/95 border border-slate-700/80 rounded-2xl p-3 shadow-2xl z-50 backdrop-blur-xl max-h-96 overflow-y-auto space-y-2">
+                  <div className="px-2 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800 flex justify-between items-center">
+                    <span>Dishes matching "{searchQuery}"</span>
+                    <span className="text-orange-400 font-extrabold">{searchedDishes.length} items</span>
+                  </div>
+
+                  {searchedDishes.length > 0 ? (
+                    searchedDishes.slice(0, 6).map((dish) => (
+                      <div
+                        key={dish.id}
+                        onClick={() => handleSelectSearchedDish(dish)}
+                        className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-800/80 cursor-pointer transition-colors group"
+                      >
+                        <img
+                          src={dish.image}
+                          alt={dish.name}
+                          className="w-12 h-12 rounded-xl object-cover bg-slate-800 shrink-0"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80';
+                          }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-white group-hover:text-orange-400 truncate">
+                              {dish.name}
+                            </span>
+                            {dish.isVeg ? (
+                              <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded font-extrabold">Veg</span>
+                            ) : (
+                              <span className="text-[10px] text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded font-extrabold">Non-Veg</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-400 truncate mt-0.5">{dish.description}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="font-black text-sm text-orange-400 block">${dish.price.toFixed(2)}</span>
+                          <span className="text-[10px] text-slate-400 font-semibold">{dish.prepTime}</span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-xs text-slate-400">
+                      No dishes found matching "{searchQuery}". Try searching for burger, pizza, ramen, tacos, or salad.
+                    </div>
+                  )}
+
+                  {searchedDishes.length > 0 && (
+                    <button
+                      onClick={() => {
+                        setShowHeroDropdown(false);
+                        setActiveTab('menu');
+                      }}
+                      className="w-full text-center py-2 text-xs font-bold text-orange-400 hover:bg-orange-500/10 rounded-xl transition-colors border-t border-slate-800"
+                    >
+                      View all {searchedDishes.length} results in Menu →
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Key Highlights */}
@@ -128,6 +239,10 @@ export const HomePage = ({
                   src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1000&q=80"
                   alt="Delicious Pizza"
                   className="w-full h-full object-cover rounded-2xl animate-float"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80';
+                  }}
                 />
                 <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10" />
               </div>
@@ -210,64 +325,110 @@ export const HomePage = ({
         </div>
       </section>
 
-      {/* Categories Horizontal Grid */}
-      <section className="container-custom space-y-6">
-        <div className="flex items-end justify-between">
-          <div>
-            <span className="text-xs font-extrabold text-orange-400 uppercase tracking-widest block mb-1">
-              Explore By Craving
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-white">Popular Categories</h2>
-          </div>
-          <button
-            onClick={() => setActiveTab('menu')}
-            className="text-xs font-bold text-orange-400 hover:underline flex items-center gap-1"
-          >
-            View All ({foodItems.length}) <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-          {categories.map((cat) => (
-            <div
-              key={cat.id}
-              onClick={() => handleCategoryClick(cat.id)}
-              className="glass-card p-4 rounded-2xl text-center cursor-pointer group hover:border-orange-500/50 transition-all flex flex-col items-center justify-center space-y-2"
-            >
-              <div className="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 group-hover:bg-gradient-orange text-orange-400 group-hover:text-white flex items-center justify-center transition-all duration-300 shadow-md">
-                {getCategoryIcon(cat.icon)}
-              </div>
-              <span className="font-bold text-xs text-slate-200 group-hover:text-orange-400 transition-colors line-clamp-1">
-                {cat.name}
+      {/* DYNAMIC SECTION: Search Results or Default Sections */}
+      {searchQuery.trim() ? (
+        <section className="container-custom space-y-6 animate-fade-in">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div>
+              <span className="text-xs font-extrabold text-orange-400 uppercase tracking-widest block mb-1">
+                Search Results
               </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2">
+                Dishes matching <span className="text-orange-400">"{searchQuery}"</span>
+              </h2>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Featured / Popular Dishes */}
-      <section className="container-custom space-y-6">
-        <div className="flex items-end justify-between">
-          <div>
-            <span className="text-xs font-extrabold text-orange-400 uppercase tracking-widest block mb-1">
-              Customer Favorites
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-white">Trending Gourmet Dishes</h2>
+            <button
+              onClick={() => setSearchQuery('')}
+              className="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700"
+            >
+              Clear Search <X className="w-3.5 h-3.5" />
+            </button>
           </div>
-          <button
-            onClick={() => setActiveTab('menu')}
-            className="btn-secondary text-xs"
-          >
-            Explore Full Menu
-          </button>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {popularDishes.map((dish) => (
-            <DishCard key={dish.id} dish={dish} onSelectDish={onSelectDish} />
-          ))}
-        </div>
-      </section>
+          {searchedDishes.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {searchedDishes.map((dish) => (
+                <DishCard key={dish.id} dish={dish} onSelectDish={onSelectDish} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16 bg-slate-900/40 rounded-3xl border border-slate-800 space-y-4">
+              <Utensils className="w-12 h-12 text-slate-600 mx-auto" />
+              <div>
+                <h3 className="font-bold text-lg text-white">No dishes found for "{searchQuery}"</h3>
+                <p className="text-xs text-slate-400 mt-1">Try searching for pizza, burger, ramen, tacos, or cake.</p>
+              </div>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="btn-primary text-xs !py-2 !px-5"
+              >
+                View All Popular Dishes
+              </button>
+            </div>
+          )}
+        </section>
+      ) : (
+        <>
+          {/* Categories Horizontal Grid */}
+          <section className="container-custom space-y-6">
+            <div className="flex items-end justify-between">
+              <div>
+                <span className="text-xs font-extrabold text-orange-400 uppercase tracking-widest block mb-1">
+                  Explore By Craving
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-black text-white">Popular Categories</h2>
+              </div>
+              <button
+                onClick={() => setActiveTab('menu')}
+                className="text-xs font-bold text-orange-400 hover:underline flex items-center gap-1"
+              >
+                View All ({foodItems.length}) <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+              {categories.map((cat) => (
+                <div
+                  key={cat.id}
+                  onClick={() => handleCategoryClick(cat.id)}
+                  className="glass-card p-4 rounded-2xl text-center cursor-pointer group hover:border-orange-500/50 transition-all flex flex-col items-center justify-center space-y-2"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 group-hover:bg-gradient-orange text-orange-400 group-hover:text-white flex items-center justify-center transition-all duration-300 shadow-md">
+                    {getCategoryIcon(cat.icon)}
+                  </div>
+                  <span className="font-bold text-xs text-slate-200 group-hover:text-orange-400 transition-colors line-clamp-1">
+                    {cat.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Featured / Popular Dishes */}
+          <section className="container-custom space-y-6">
+            <div className="flex items-end justify-between">
+              <div>
+                <span className="text-xs font-extrabold text-orange-400 uppercase tracking-widest block mb-1">
+                  Customer Favorites
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-black text-white">Trending Gourmet Dishes</h2>
+              </div>
+              <button
+                onClick={() => setActiveTab('menu')}
+                className="btn-secondary text-xs"
+              >
+                Explore Full Menu
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {popularDishes.map((dish) => (
+                <DishCard key={dish.id} dish={dish} onSelectDish={onSelectDish} />
+              ))}
+            </div>
+          </section>
+        </>
+      )}
 
       {/* Why Choose FlavorCraft Feature Section */}
       <section className="container-custom">
@@ -331,3 +492,4 @@ export const HomePage = ({
     </div>
   );
 };
+

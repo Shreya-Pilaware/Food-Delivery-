@@ -47,6 +47,7 @@ function AppContent() {
         setIsAuthOpen={setIsAuthOpen}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        onSelectDish={(dish) => setSelectedDishForModal(dish)}
       />
 
       {/* Main Render Page Content */}

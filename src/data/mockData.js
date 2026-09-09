@@ -23,6 +23,8 @@ export const INITIAL_FOOD_ITEMS = [
     isVegan: false,
     isGlutenFree: false,
     isPopular: true,
+    discountBadge: '50% OFF',
+    originalPrice: 29.99,
     description: 'Black Angus beef patty topped with sautéed wild mushrooms, creamy black truffle aioli, Swiss cheese, and arugula on a toasted brioche bun.',
     image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80',
     tags: ['Best Seller', 'Chef Special'],
@@ -64,6 +66,8 @@ export const INITIAL_FOOD_ITEMS = [
     isVegan: false,
     isGlutenFree: false,
     isPopular: true,
+    discountBadge: 'SAVE $4.50',
+    originalPrice: 21.00,
     description: 'Authentic wood-fired Neapolitan sourdough crust topped with San Marzano tomato sauce, fresh Fior di Latte mozzarella, basil leaves, and extra virgin olive oil.',
     image: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=800&q=80',
     tags: ['Wood-Fired', 'Vegetarian'],
@@ -104,6 +108,8 @@ export const INITIAL_FOOD_ITEMS = [
     isVegan: false,
     isGlutenFree: false,
     isPopular: true,
+    discountBadge: '30% OFF',
+    originalPrice: 22.99,
     description: 'Rich 12-hour simmered pork bone broth, hand-crafted ramen noodles, tender chashu pork belly, soft-boiled ajitsuke egg, wood ear mushrooms, and nori seaweed.',
     image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=800&q=80',
     tags: ['Comfort Food', 'Top Pick'],
@@ -434,6 +440,9 @@ export const INITIAL_FOOD_ITEMS = [
 ];
 
 export const PROMO_COUPONS = {
+  'CRAVE50': { discountPercent: 50, minSpend: 20, label: '50% OFF on order over $20' },
+  'BOGOFOOD': { fixedDiscount: 15.00, minSpend: 30, label: 'Buy 1 Get 1 Free ($15 OFF)' },
+  'FLAVOR30': { discountPercent: 30, minSpend: 25, label: '30% OFF on order over $25' },
   'WELCOME10': { discountPercent: 10, minSpend: 15, label: '10% OFF on order over $15' },
   'YUMMY20': { discountPercent: 20, minSpend: 25, label: '20% OFF on order over $25' },
   'FREEDELIVERY': { fixedDiscount: 2.99, minSpend: 20, label: 'Free Delivery ($2.99 OFF)' }

@@ -30,6 +30,10 @@ export const DishCard = ({ dish, onSelectDish }) => {
           alt={dish.name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           loading="lazy"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80';
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80" />
 
@@ -51,6 +55,15 @@ export const DishCard = ({ dish, onSelectDish }) => {
             </span>
           )}
         </div>
+
+        {/* Top Right Discount Badge */}
+        {dish.discountBadge && (
+          <div className="absolute top-3 right-3 z-10">
+            <span className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-rose-600 to-orange-600 text-white text-[10px] font-black uppercase shadow-lg shadow-rose-950/80 border border-rose-400/40 flex items-center gap-1 animate-pulse">
+              🏷️ {dish.discountBadge}
+            </span>
+          </div>
+        )}
 
         {/* Prep Time & Calorie badge */}
         <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] font-semibold text-slate-300 z-10">
@@ -92,9 +105,16 @@ export const DishCard = ({ dish, onSelectDish }) => {
         <div className="flex items-center justify-between pt-3 border-t border-slate-800/80 mt-2">
           <div>
             <span className="text-xs text-slate-500 block uppercase font-semibold">Price</span>
-            <span className="text-lg font-extrabold text-white">
-              ${dish.price.toFixed(2)}
-            </span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg font-extrabold text-white">
+                ${dish.price.toFixed(2)}
+              </span>
+              {dish.originalPrice && (
+                <span className="text-xs text-slate-500 line-through font-semibold">
+                  ${dish.originalPrice.toFixed(2)}
+                </span>
+              )}
+            </div>
           </div>
 
           <button

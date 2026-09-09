@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useOrders } from '../context/OrderContext';
+import { useFood } from '../context/FoodContext';
 import {
   Flame,
   ShoppingBag,
@@ -14,7 +15,8 @@ import {
   Menu,
   X,
   PlusCircle,
-  LayoutDashboard
+  LayoutDashboard,
+  Utensils
 } from 'lucide-react';
 
 export const Navbar = ({
@@ -23,17 +25,49 @@ export const Navbar = ({
   setIsCartOpen,
   setIsAuthOpen,
   searchQuery,
-  setSearchQuery
+  setSearchQuery,
+  onSelectDish
 }) => {
   const { totalItemCount, subtotal } = useCart();
   const { user, logout, activeRole, switchRole, quickLoginAdmin, quickLoginCustomer } = useAuth();
   const { activeOrder } = useOrders();
+  const { foodItems } = useFood();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const searchRef = useRef(null);
+
+  // Close search dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setShowSearchDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const searchResults = searchQuery.trim()
+    ? foodItems.filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.category.toLowerCase().includes(searchQuery.toLowerCase())
+      ).slice(0, 6)
+    : [];
 
   const handleNavClick = (tab) => {
     setActiveTab(tab);
     setIsMobileMenuOpen(false);
+    setShowSearchDropdown(false);
+  };
+
+  const handleSelectSearchedDish = (dish) => {
+    setShowSearchDropdown(false);
+    if (onSelectDish) {
+      onSelectDish(dish);
+    }
   };
 
   return (
@@ -58,18 +92,88 @@ export const Navbar = ({
         </div>
 
         {/* Search Bar (Desktop) */}
-        <div className="hidden md:flex items-center relative w-72 lg:w-96">
+        <div ref={searchRef} className="hidden md:flex items-center relative w-72 lg:w-96">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
+            onFocus={() => setShowSearchDropdown(true)}
             onChange={(e) => {
               setSearchQuery(e.target.value);
-              if (activeTab !== 'menu') setActiveTab('menu');
+              setShowSearchDropdown(true);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                setShowSearchDropdown(false);
+                if (activeTab !== 'menu') setActiveTab('menu');
+              }
             }}
             placeholder="Search pizza, burger, ramen..."
             className="w-full bg-slate-900/80 border border-slate-700/60 rounded-full pl-10 pr-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all"
           />
+
+          {/* Live Search Suggestions Dropdown */}
+          {showSearchDropdown && searchQuery.trim().length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900/95 border border-slate-700/80 rounded-2xl p-2 shadow-2xl z-50 backdrop-blur-xl max-h-96 overflow-y-auto space-y-1">
+              <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800 flex justify-between items-center">
+                <span>Dishes Matching "{searchQuery}"</span>
+                <span className="text-orange-400">{searchResults.length} found</span>
+              </div>
+
+              {searchResults.length > 0 ? (
+                searchResults.map((dish) => (
+                  <div
+                    key={dish.id}
+                    onClick={() => handleSelectSearchedDish(dish)}
+                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-800/80 cursor-pointer transition-colors group"
+                  >
+                    <img
+                      src={dish.image}
+                      alt={dish.name}
+                      className="w-11 h-11 rounded-lg object-cover bg-slate-800 shrink-0"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80';
+                      }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-xs text-white group-hover:text-orange-400 truncate">
+                          {dish.name}
+                        </span>
+                        {dish.isVeg ? (
+                          <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded font-extrabold">Veg</span>
+                        ) : (
+                          <span className="text-[10px] text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded font-extrabold">Non-Veg</span>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-slate-400 block truncate">
+                        {dish.description}
+                      </span>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="font-black text-xs text-orange-400 block">${dish.price.toFixed(2)}</span>
+                      <span className="text-[10px] text-slate-400 font-semibold">{dish.prepTime}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-4 text-center text-xs text-slate-400">
+                  No food items found matching "{searchQuery}"
+                </div>
+              )}
+
+              <button
+                onClick={() => {
+                  setShowSearchDropdown(false);
+                  setActiveTab('menu');
+                }}
+                className="w-full text-center py-2 text-xs font-bold text-orange-400 hover:bg-orange-500/10 rounded-xl transition-colors border-t border-slate-800 mt-1"
+              >
+                View all results in Menu →
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Navigation Links (Desktop) */}
@@ -259,13 +363,38 @@ export const Navbar = ({
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setActiveTab('menu');
-              }}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search dishes..."
               className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-sm text-slate-200"
             />
+            {searchQuery.trim().length > 0 && searchResults.length > 0 && (
+              <div className="mt-2 bg-slate-900 border border-slate-700 rounded-xl p-2 max-h-60 overflow-y-auto space-y-1">
+                {searchResults.map((dish) => (
+                  <div
+                    key={dish.id}
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      handleSelectSearchedDish(dish);
+                    }}
+                    className="flex items-center gap-2 p-2 hover:bg-slate-800 rounded-lg cursor-pointer"
+                  >
+                    <img
+                      src={dish.image}
+                      alt={dish.name}
+                      className="w-9 h-9 rounded object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80';
+                      }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-white truncate">{dish.name}</p>
+                      <p className="text-[10px] text-orange-400 font-bold">${dish.price.toFixed(2)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <button
